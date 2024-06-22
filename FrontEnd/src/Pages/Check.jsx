@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
+import OptionRange from './OptionRange';
+import LabOptions from './LabOptions'
 
 function Check() {
   let responseFromServer  ;
+  
+  
+  //defining the useStates for the different options ...
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selectedLab, setSelectedLab] = useState('');
   const [selectedProduct, setSelectedProduct] = useState('');
@@ -12,8 +16,10 @@ function Check() {
   const [tablesData, setTablesData] = useState([]);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
+  const [temp_cat_id , setTempCatId] = useState() ;  
   const navigate = useNavigate();
-
+  
+  //Following are  different handle functions for handling the events ...
   const handleDepartmentChange = (event) => {
     setSelectedDepartment(event.target.value);
     setSelectedLab('');
@@ -38,84 +44,30 @@ function Check() {
     setSelectedOption(event.target.value);
   };
 
-  const renderLabOptions = () => {
-    switch (selectedDepartment) {
-      case 'Computer Engineering':
-        return (
-          <>
-            <option value="">Select the Lab-ID</option>
-            <option value="101">101</option>
-            <option value="102">102</option>
-            <option value="103">103</option>
-          </>
-        );
-      case 'Information Technology':
-        return (
-          <>
-            <option value="">Select the Lab-ID</option>
-            <option value="301">301</option>
-            <option value="302">302</option>
-            <option value="303">303</option>
-            <option value="401">401</option>
-            <option value="402">402</option>
-            <option value="403">403</option>
-          </>
-        );
-      case 'Electronics & Telecommunication':
-        return (
-          <>
-            <option value="">Select the Lab-ID</option>
-            <option value="201">201</option>
-            <option value="202">202</option>
-            <option value="203">203</option>
-          </>
-        );
-      default:
-        return <option value="">Select the Lab-ID</option>;
-    }
-  };
-
-  const renderOptionRange = () => {
-    if (selectedProduct === 'Computer') {
-      return Array.from({ length: 25 }, (_, i) => (
-        <option key={i + 1} value={i + 1}>{i + 1}</option>
-      ));
-    } else if (selectedProduct === 'Printers') {
-      return Array.from({ length: 3 }, (_, i) => (
-        <option key={i + 1} value={i + 1}>{i + 1}</option>
-      ));
-    } else if (selectedProduct === 'LAN') {
-      return Array.from({ length: 25 }, (_, i) => (
-        <option key={i + 1} value={i + 1}>{i + 1}</option>
-      ));
-    } else {
-      return <option value="">Select an Option</option>;
-    }
-  };
-
-  const getRandomSupplierName = () => {
-    const suppliers = ['Supplier 1', 'Supplier 2', 'Supplier 3', 'Supplier 4'];
-    return suppliers[Math.floor(Math.random() * suppliers.length)];
-  };
-
+  //Following is the Submit method for handling the submit ...
   const handleSubmit = async (event) => {
     event.preventDefault()
+    //This is category Id . . . 
+    let cat_id ; 
 
     let defaultDescription = '';
     let defaultPurchasePrice = '';
     let defaultTax = '';
     let defaultSupplierInfo = '';
-    let cat_id ; 
+    
     if(selectedProduct === 'Computer'){
       cat_id = 1 ; 
+      setTempCatId(cat_id) ; 
     }
     else if (selectedProduct === 'Printers'){
       cat_id = 2 ; 
+      setTempCatId(cat_id) ; 
     }
     else{
       cat_id = 3 ; 
+      setTempCatId(cat_id) ; 
     }
-      
+
     try {
       const response = await axios.post('http://localhost:8080/deadstock1', {
         lab_id: parseInt(selectedLab),
@@ -125,6 +77,7 @@ function Check() {
 
       responseFromServer = response ; 
       
+      console.log(responseFromServer.data);
 
       // Handle response (e.g., show success message)
     } catch (error) {
@@ -135,39 +88,40 @@ function Check() {
     
     switch (selectedProduct) {
       case 'Computer':
-        defaultDescription = responseFromServer.data.description;
-        defaultPurchasePrice = responseFromServer.data.unit_price;
-        defaultTax = responseFromServer.data.tax + '%';
-        defaultSupplierInfo = responseFromServer.data.shop_name;
+        defaultDescription = "Not Given Yet" ; 
+        defaultPurchasePrice = "Not Given Yet";
+        defaultTax = "Not Given Yet";
+        defaultSupplierInfo = "Not Given Yet";
         break;
       case 'Printers':
-        defaultDescription = 'Specifications: Printer Type - Laser, Printing Technology - Monochrome';
-        defaultPurchasePrice = '₹20000';
-        defaultTax = '7%';
-        defaultSupplierInfo = getRandomSupplierName();
+        defaultDescription = "Not Given Yet";
+        defaultPurchasePrice = 'Not Given Yet';
+        defaultTax = "Not Given Yet";
+        defaultSupplierInfo = "Not Given Yet"
         break;
       case 'LAN':
-        defaultDescription = 'Specifications: Speed - 1Gbps, Ports - 8, Type - Managed';
-        defaultPurchasePrice = '₹10000';
-        defaultTax = '3%';
-        defaultSupplierInfo = getRandomSupplierName();
+        defaultDescription = "Not Given Yet";
+        defaultPurchasePrice = "Not Given Yet";
+        defaultTax = "Not Given Yet";
+        defaultSupplierInfo ="Not Given Yet"
         break;
       default:
         break;
     }
     
     const uniqueId = `${selectedLab}/${selectedProduct === 'Computer' ? '01' : selectedProduct === 'Printers' ? '02' : '03'}/${selectedOption}`;
+
     const newData = {
       product: selectedProduct,
       serialNumber: selectedOption,
       uniqueId,
-      description: defaultDescription,
+      description: responseFromServer.data.description,
       supplierDate: '2024-04-07',
-      purchasePrice: defaultPurchasePrice,
-      tax: defaultTax, // Tax format remains the same
+      purchasePrice: responseFromServer.data.unit_price,
+      tax: responseFromServer.data.tax , // Tax format remains the same
       purchaseDate: responseFromServer.data.purchase_date,
       expiryDate: responseFromServer.data.Warranty + 'years',
-      supplierInformation: defaultSupplierInfo, // Changed to supplier information
+      supplierInformation: responseFromServer.data.shop_name + " " +  responseFromServer.data.address , // Changed to supplier information
     };
     
     if (formSubmitted && editIndex !== null) {
@@ -189,14 +143,36 @@ function Check() {
     setSelectedProduct(rowData.product);
     setSelectedOption(rowData.serialNumber); 
     
+    
     setEditIndex(index);
   };
+  
+  const  handleSave = async (index) => {
+    console.log(temp_cat_id) ; 
+
+    try {
+      const response = await axios.patch('http://localhost:8080/deadstock', {
+
+        lab_id: parseInt(selectedLab),
+        unit_id: parseInt(selectedOption),
+        cat_id: temp_cat_id ,
+        new_description : tablesData[index].description ,
+      });
+      
+      console.log('Row data updated:', response.data);
+      setEditIndex(null);
+    } catch (error) {
+      console.error('Error updating row data:', error);
+    }
+
+  }
 
   const handleInputChange = (index, field, value) => {
     const updatedData = [...tablesData];
     updatedData[index][field] = value;
     setTablesData(updatedData);
   };
+
 
   return (
     <>
@@ -205,6 +181,7 @@ function Check() {
           <div className="mb-4">
             <label htmlFor="selectDepartment" className="block text-gray-700 font-bold mb-2">Choose a Department:</label>
             <select id="selectDepartment" value={selectedDepartment} onChange={handleDepartmentChange} className="w-full p-2 border border-gray-400 rounded-md custom-select">
+
               <option value="">Select the Department</option>
               <option value="Computer Engineering">Computer Engineering</option>
               <option value="Information Technology">Information Technology</option>
@@ -216,7 +193,7 @@ function Check() {
             <div>
               <label htmlFor="selectLab" className="block text-gray-700 font-bold mb-2">Choose a Lab-ID:</label>
               <select id="selectLab" value={selectedLab} onChange={handleLabChange} className="w-full p-2 border border-gray-400 rounded-md custom-select">
-                {renderLabOptions()}
+                <LabOptions selectedDepartment = {selectedDepartment}></LabOptions>
               </select>
               {selectedLab && <p className="text-gray-600 mt-2">You selected Lab-ID: {selectedLab}</p>}
             </div>
@@ -235,7 +212,7 @@ function Check() {
                 <div>
                   <label htmlFor="selectOption" className="block text-gray-700 font-bold mb-2">Choose an Option:</label>
                   <select id="selectOption" value={selectedOption} onChange={handleOptionChange} className="w-full p-2 border border-gray-400 rounded-md custom-select">
-                    {renderOptionRange()}
+                    <OptionRange selectedProduct = {selectedProduct}></OptionRange>
                   </select>
                 </div>
               )}
@@ -277,7 +254,7 @@ function Check() {
                       <td className="border px-4 py-2">{editIndex === index ? <input type="text" value={data.purchaseDate} onChange={(e) => handleInputChange(index, 'purchaseDate', e.target.value)} /> : data.purchaseDate}</td>
                       <td className="border px-4 py-2">{editIndex === index ? <input type="text" value={data.expiryDate} onChange={(e) => handleInputChange(index, 'expiryDate', e.target.value)} /> : data.expiryDate}</td>
                       <td className="border px-4 py-2">
-                        {editIndex === index ? <button onClick={() => setEditIndex(null)}>Save</button> : <button onClick={() => handleEdit(index)}>Edit</button>}
+                        {editIndex === index ? <button onClick={() => handleSave(index) }>Save</button> : <button onClick={() => handleEdit(index)}>Edit</button>}
                         {/* Add delete option if needed */}
                       </td>
                     </tr>

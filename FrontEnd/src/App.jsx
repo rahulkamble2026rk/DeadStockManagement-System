@@ -6,6 +6,8 @@ import Deadstock from './Pages/Deadstock';
 import HomePage from './Pages/HomePage';
 import Histroycard from './Pages/Historycard';
 import Check from './Pages/Check'; // Import the Check component 
+import AllHistoryCards from './Pages/AllHistoryCards' ; 
+import './App.css'
 
 function App() {
   return (
@@ -16,6 +18,7 @@ function App() {
           <Route path='check' element={<Check />} />
         </Route>
         <Route path='/history_card' element={<Histroycard />} />
+        <Route path='/specific_history_card' element={<AllHistoryCards></AllHistoryCards>} />
       </Routes>
     </Router>
   );

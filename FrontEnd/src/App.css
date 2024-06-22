@@ -1,0 +1,10 @@
+.LabHeading{
+    color: azure;
+    font-size: 40px ;
+}
+
+.histButton{
+    float: right;
+    font-size: 100%;
+    margin-bottom: 10px;
+}

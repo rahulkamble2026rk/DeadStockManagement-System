@@ -39,12 +39,14 @@ app.get("/history_card/:lab_id/:cat_id/:unit_id", async (req, res) => {
 //to update deadstock description
 app.patch("/deadstock", async (req, res) => {
   const { lab_id, cat_id, unit_id, new_description } = req.body;
+  
   const updatedDeadStock = await updateDeadStock(
     lab_id,
     cat_id,
     unit_id,
     new_description
   );
+  
   res.status(200).send(updatedDeadStock);
 });
 
@@ -66,7 +68,7 @@ app.patch("/history_card", async (req, res) => {
     remedy_taken,
     work_completion_date
   );
-  res.status(200).send(updatedHistoryCard);
+  res.status(200).send(updatedHistoryCard) ;
 });
 
 //to insert new problem in history card
@@ -92,7 +94,7 @@ app.post("/history_card", async (req, res) => {
     remedy_taken,
     work_completion_date
   );
-  res.status(201).send(newProblem);
+  res.status(200).send(newProblem);
 });
 
 

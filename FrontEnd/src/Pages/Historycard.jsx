@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import Video from '../assets/video3.mp4';
+import LabOptions from './LabOptions' ;
+import OptionRange from './OptionRange' ;
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 export default function Historycard() {
+  let responseFromServer  ;
+  const navigate = useNavigate();
+
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selectedLab, setSelectedLab] = useState('');
   const [selectedProduct, setSelectedProduct] = useState('');
@@ -11,6 +18,7 @@ export default function Historycard() {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
   const [editedData, setEditedData] = useState({});
+  const [temp_cat_id , setTempCatId] = useState() ; 
 
   const handleDepartmentChange = (event) => {
     setSelectedDepartment(event.target.value);
@@ -40,95 +48,39 @@ export default function Historycard() {
     setSelectedProblem(event.target.value);
   };
 
-  const renderLabOptions = () => {
-    switch (selectedDepartment) {
-      case 'Computer Engineering':
-        return (
-          <> <option value="">Select the Lab-ID</option>
-            <option value="A1-101">A1-101</option>
-            <option value="A1-102">A1-102</option>
-            <option value="A1-103">A1-103</option>
-          </>
-        );
-      case 'Information Technology':
-        return (<>
-            <option value="">Select the Lab-ID</option>
-            <option value="A3-301">A3-301</option>
-            <option value="A3-302">A3-302</option>
-            <option value="A3-303">A3-303</option>
-            <option value="A3-401">A3-401</option>
-            <option value="A3-402">A3-402</option>
-            <option value="A3-403">A3-403</option>
-          </>
-        );
-      case 'Electronics & Telecommunication':
-        return (
-          <><option value="">Select the Lab-ID</option>
-            <option value="A3-201">A3-201</option>
-            <option value="A3-202">A3-202</option>
-            <option value="A3-203">A3-203</option>
-          </>
-        );
-      default:
-        return <option value="">Select the Lab-ID</option>;
-    }
-  };
-
-  const renderOptionRange = () => {
-    if (selectedProduct === 'Computer') {
-      return Array.from({ length: 25 }, (_, i) => (
-        <option key={i + 1} value={i + 1}>{i + 1}</option>
-      ));
-    } else if (selectedProduct === 'Printers') {
-      return Array.from({ length: 3 }, (_, i) => (
-        <option key={i + 1} value={i + 1}>{i + 1}</option>
-      ));
-    } else if (selectedProduct === 'LAN') {
-      return Array.from({ length: 25 }, (_, i) => (
-        <option key={i + 1} value={i + 1}>{i + 1}</option>
-      ));
-    } else {
-      return <option value="">Select an Option</option>;
-    }
-  };
-
-  const getRandomSupplierName = () => {
-    const suppliers = ['Supplier 1', 'Supplier 2', 'Supplier 3', 'Supplier 4'];
-    return suppliers[Math.floor(Math.random() * suppliers.length)];
-  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     
     let defaultDescription = '';
     let defaultSupplierInfo = '';
+    let cat_id ; 
 
-    // try {
-    //   const response = await axios.post('http://localhost:8080/historycard', {
-    //     lab_id: parseInt(selectedLab),
-    //     cat_id: cat_id,
-    //     unit_id: parseInt(selectedOption)
-    //   });
-    //   console.log('Response from server:', response.data);
-    //   // Handle response (e.g., show success message)
-    // } catch (error) {
-    //   console.error('Error submitting form:', error);
-    //   // Handle error (e.g., show error message)
-    // }
-
+    if(selectedProduct === 'Computer'){
+      cat_id = 1 ; 
+      setTempCatId(cat_id) ; 
+    }
+    else if (selectedProduct === 'Printers'){
+      cat_id = 2 ; 
+      setTempCatId(cat_id) ; 
+    }
+    else{
+      cat_id = 3 ; 
+      setTempCatId(cat_id) ; 
+    }
     
     switch (selectedProduct) {
       case 'Computer':
         defaultDescription = 'Specifications: Processor - Intel Core i5, RAM - 8GB, Storage - 512GB SSD';
-        defaultSupplierInfo = getRandomSupplierName();
+        defaultSupplierInfo = "Not Yet given " ;
         break;
       case 'Printers':
         defaultDescription = 'Specifications: Printer Type - Laser, Printing Technology - Monochrome';
-        defaultSupplierInfo = getRandomSupplierName();
+        defaultSupplierInfo = "Not Yet given " ;
         break;
       case 'LAN':
         defaultDescription = 'Specifications: Speed - 1Gbps, Ports - 8, Type - Managed';
-        defaultSupplierInfo = getRandomSupplierName();
+        defaultSupplierInfo = "Not Yet given " ;
         break;
       default:
         break;
@@ -170,6 +122,24 @@ export default function Historycard() {
     setEditedData(rowData);
   };
 
+  const handleSave = async () => {
+
+    try {
+      const response = await axios.patch('http://localhost:8080/history_card', {
+
+        lab_id: parseInt(selectedLab),
+        unit_id: parseInt(selectedOption),
+        cat_id: temp_cat_id ,
+        new_description : tablesData[index].description ,
+      });
+      
+      console.log('Row data updated:', response.data);
+      setEditIndex(null);
+    } catch (error) {
+      console.error('Error updating row data:', error);
+    }
+  }
+
   const handleInputChange = (field, value) => {
     setEditedData({ ...editedData, [field]: value });
   };
@@ -181,9 +151,15 @@ export default function Historycard() {
         Your browser does not support the video tag.
       </video>
       <div className="content relative z-10 p-8 text-black">
+      
 
         {/* Form */}
         <div className="max-w-md mx-auto mt-1 p-4 bg-gray-100 rounded-lg shadow-lg">
+        <button className='histButton bg-blue-500 text-white px-4 py-2 rounded-md mt-4' onClick={() => {
+          
+          navigate('/specific_history_card') ;
+        }}>See All</button>
+          
           <form onSubmit={handleSubmit}>
             <div className="mb-1">
               <label htmlFor="selectDepartment" className="block text-gray-700 font-bold mb-2">Choose a Department:</label>
@@ -199,7 +175,7 @@ export default function Historycard() {
               <div>
                 <label htmlFor="selectLab" className="block text-gray-700 font-bold mb-2">Choose a Lab-ID:</label>
                 <select id="selectLab" value={selectedLab} onChange={handleLabChange} className="w-full p-2 border border-gray-400 rounded-md custom-select">
-                  {renderLabOptions()}
+                  <LabOptions selectedDepartment={selectedDepartment}></LabOptions>
                 </select>
                 {selectedLab && <p className="text-gray-600 mt-1">You selected Lab-ID: {selectedLab}</p>}
               </div>
@@ -218,7 +194,7 @@ export default function Historycard() {
                   <div>
                     <label htmlFor="selectOption" className="block text-gray-700 font-bold mb-2">Choose an Option:</label>
                     <select id="selectOption" value={selectedOption} onChange={handleOptionChange} className="w-full p-2 border border-gray-400 rounded-md custom-select">
-                      {renderOptionRange()}
+                      <OptionRange selectedProduct={selectedProduct}></OptionRange>
                     </select>
                   </div>
                 )}
@@ -272,7 +248,7 @@ export default function Historycard() {
                         <td className="border px-4 py-2">{editIndex === index ? <input type="text" value={editedData.expiryDate || data.expiryDate} onChange={(e) => handleInputChange('expiryDate', e.target.value)} /> : data.expiryDate}</td> {/* Changed column name here */}
                         <td className="border px-4 py-2">{editIndex === index ? <input type="text" value={editedData.remedies || data.remedies} onChange={(e) => handleInputChange('remedies', e.target.value)} /> : data.remedies}</td>
                         <td className="border px-4 py-2">
-                          {editIndex === index ? <button onClick={() => setEditIndex(null)}>Save</button> : <button onClick={() => handleEdit(index)}>Edit</button>}
+                          {editIndex === index ? <button onClick={() => handleSave()}>Save</button> : <button onClick={() => handleEdit(index)}>Edit</button>}
                         </td>
                       </tr>
                     ))}

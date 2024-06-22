@@ -21,7 +21,7 @@ return(
         >
         <source src={video} type="video/mp4" />
       </video>
-        <LoginPage></LoginPage>
+        <center><h1 className='LabHeading'>Welcome to the PICT Lab Administrator System</h1></center>
   </>
 )
 }
